@@ -5,7 +5,8 @@
 // @grant       none
 // @version     1.0
 // @author      Ben Cwik
-// @description 7/23/2020, 5:15:54 PM
+// @description Easily search and sort your favorite properties on Zillow
+// @downloadURL https://raw.githubusercontent.com/bcwik9/Userscripts/master/zillow_favorite_enhancer.js
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // @require http://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js
 // ==/UserScript==
@@ -75,7 +76,7 @@ $(function(){
           var days_on_match = days_on_fact ? days_on_fact.match(/(\d+)/) : undefined;
           var days_on_zillow = days_on_match ? days_on_match[1] : '';
           var row = '<tr>'+
-              '<td><a href="'+ data['url'] +'">'+'<img src="'+ data['picture_url'] +'" style="max-width:200px;"></a></td>'+
+              '<td><a href="'+ data['url'] +'">'+'<img src="'+ data['picture_url'] +'" style="max-width:200px;max-height:150px;"></a></td>'+
               '<td>'+ data['price'] + '</td>'+
               '<td>'+ data['status'] + '</td>'+
               '<td>'+ data['bedrooms'] + '</td>'+
