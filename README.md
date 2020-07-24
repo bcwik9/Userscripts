@@ -1,0 +1,2 @@
+## Usage
+These scripts are intended to be run by web extensions such as [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=en) or [Violentmonkey](https://chrome.google.com/webstore/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag?hl=en). They could possibly be run alone if the dependencies are included and you copy & paste the script in to the console.
