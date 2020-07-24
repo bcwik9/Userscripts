@@ -47,9 +47,10 @@ $(function(){
         '<th>HOA</th>'+
         '<th>Lot</th>'+
         '<th>Price/sqft</th>'+
-        '<th>Broker</th>'+
+        '<th>Brokerage</th>'+
         '<th>Saves</th>'+
         '<th>Days on Zillow</th>'+
+        '<th>Date Saved</th>'+
         '</tr></thead>'+
         '<tbody></tbody>'+
         '</table>';
@@ -96,6 +97,7 @@ $(function(){
               '<td>'+ data['brokerage'] + '</td>'+
               '<td>'+ get_fact(data['facts'], 'Saves') + '</td>'+
               '<td>'+ days_on_zillow + '</td>'+
+              '<td>'+ data['raw_saved_date'] + '</td>'+
               '</tr>';
           body.append(row);
         }
@@ -108,11 +110,49 @@ $(function(){
         clearInterval(data_ready);
         table.DataTable({
           "lengthMenu": [[-1, 10, 25, 50], ['All', 10, 25, 50]],
-          "order": [[1, "asc" ]]
+          "order": [[20, "desc" ]],
+          "columns":[
+            {data: 'picture'},
+            {data: 'price'},
+            {data: 'status'},
+            {data: 'bed'},
+            {data: 'bath'},
+            {data: 'sqft'},
+            {data: 'city'},
+            {data: 'state'},
+            {data: 'zip'},
+            {data: 'type'},
+            {data: 'built'},
+            {data: 'heating'},
+            {data: 'cooling'},
+            {data: 'parking'},
+            {data: 'hoa'},
+            {data: 'lot'},
+            {data: 'price/sqft'},
+            {data: 'brokerage'},
+            {data: 'saves'},
+            {data: 'days_on_zillow', render: render_days_on_zillow},
+            {data: 'date_saved', render: render_date}
+          ]
         });
       }
     }, 250);
     
+  }
+  
+  var render_days_on_zillow = function(data,type){
+    if(type === 'display'){
+      return data;
+    }
+    return data ? data : 99999999;
+  }
+  
+  var render_date = function(raw_date,type){
+    if(type === 'display'){
+      var date = new Date(parseInt(raw_date));
+      return date;
+    }
+    return raw_date;
   }
   
   var data_for_property = function(data_index){
@@ -123,6 +163,13 @@ $(function(){
         //console.log(key);
         //console.log(val);
         //console.log('---------------------------')
+        var base_regex = new RegExp('\\.' + data_index + '$');
+        if(key.match(base_regex)){
+          property_data['raw_saved_date'] = val['savedDate'];
+          var date = new Date(val['savedDate']);
+          property_data['saved_date'] = date;
+          property_data['short_saved_date'] = [date.getFullYear(), date.getMonth(), date.getDate()].join('/');
+        }
         if(key.match(/property$/)){
           property_data['status'] = titleize(val['homeStatus']);
           var status_class= 'zsg-icon-for-sale';
