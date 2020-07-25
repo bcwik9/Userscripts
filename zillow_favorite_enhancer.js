@@ -114,25 +114,25 @@ $(function(){
           order: [[20, "desc" ]],
           columns:[
             {data: 'picture'},
-            {data: 'price'},
+            {data: 'price', render: render_number},
             {data: 'status'},
-            {data: 'bed'},
-            {data: 'bath'},
-            {data: 'sqft'},
+            {data: 'bed', render: render_number},
+            {data: 'bath', render: render_number},
+            {data: 'sqft', render: render_number},
             {data: 'city'},
             {data: 'state'},
-            {data: 'zip'},
+            {data: 'zip', render: render_number},
             {data: 'type'},
-            {data: 'built'},
+            {data: 'built', render: render_number},
             {data: 'heating'},
             {data: 'cooling'},
             {data: 'parking'},
-            {data: 'hoa'},
+            {data: 'hoa', render: render_number},
             {data: 'lot'},
-            {data: 'price/sqft'},
+            {data: 'price/sqft', render: render_number},
             {data: 'brokerage'},
-            {data: 'saves'},
-            {data: 'days_on_zillow', render: render_days_on_zillow},
+            {data: 'saves', render: render_number},
+            {data: 'days_on_zillow', render: render_number},
             {data: 'date_saved', render: render_date}
           ]
         });
@@ -157,11 +157,20 @@ $(function(){
     
   }
   
-  var render_days_on_zillow = function(data,type){
+  var render_number = function(data,type){
     if(type === 'display'){
       return data;
     }
-    return data ? data : 99999999;
+    var ret = 9999999;
+    if(data){
+      var match = data.replaceAll(',','').match(/(\d+)/);
+      if(match && match[1]){
+        ret = match[1];
+      }else if(data === 'None'){
+        ret = 0;
+      }
+    }
+    return ret;
   }
   
   var render_date = function(raw_date,type){
