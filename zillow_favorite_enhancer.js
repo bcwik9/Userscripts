@@ -18,6 +18,7 @@ $(function(){
   var menu_wrap = $('div[class^="FavoritesList__MenuBarWrapper"]');
   var card = $(card_list.children()[0]);
   var card_html;
+  var datatable;
   
   var active_listing_regex = /(for.sale|pre.foreclosure)/i;
   var pending_listing_regex = /(contingent|accepting.backups|pending|under.contract)/i;
@@ -62,7 +63,7 @@ $(function(){
       '</div>'
     );
     var table = $('#custom-table');
-    var body = table.find('tbody');
+    var body = table.find('tbody');   
     
     // populate the table with row data
     var listings = all_listings();
@@ -108,10 +109,10 @@ $(function(){
     var data_ready = setInterval(function(){
       if(body.find('tr').length == listings.length){
         clearInterval(data_ready);
-        table.DataTable({
-          "lengthMenu": [[-1, 10, 25, 50], ['All', 10, 25, 50]],
-          "order": [[20, "desc" ]],
-          "columns":[
+        datatable = table.DataTable({
+          lengthMenu: [[-1, 10, 25, 50], ['All', 10, 25, 50]],
+          order: [[20, "desc" ]],
+          columns:[
             {data: 'picture'},
             {data: 'price'},
             {data: 'status'},
@@ -134,6 +135,22 @@ $(function(){
             {data: 'days_on_zillow', render: render_days_on_zillow},
             {data: 'date_saved', render: render_date}
           ]
+        });
+        // add filters to each column
+        table.find('thead tr').clone(true).appendTo( '#custom-table thead' );
+        table.find('thead tr:eq(1) th').each( function (i) {
+          var title = $(this).text();
+          $(this).removeClass('sorting');
+          $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+          var inputs = $('input', this);
+          inputs.on( 'keyup change', function () {
+            if(datatable.column(i).search() !== this.value) {
+              datatable
+                .column(i)
+                .search( this.value )
+                .draw();
+            }
+          });
         });
       }
     }, 250);
