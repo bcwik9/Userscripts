@@ -140,7 +140,7 @@ $(function(){
         table.find('thead tr').clone(true).appendTo( '#custom-table thead' );
         table.find('thead tr:eq(1) th').each( function (i) {
           var title = $(this).text();
-          $(this).removeClass('sorting');
+          $(this).attr('class', '');
           $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
           var inputs = $('input', this);
           inputs.on( 'keyup change', function () {
