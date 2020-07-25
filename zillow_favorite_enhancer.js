@@ -14,8 +14,9 @@
 $(function(){
   var data = JSON.parse($("#__NEXT_DATA__").text())['props']['apolloInitialCacheData'];
   var main_body = $('div[class^="Favorites__SavedHomesWrapper"]');
-  var card_list = $("div[class^='FavoritesList__ListCardsWrapper']");
+  var card_list = $('div[class^="FavoritesList__ListCardsWrapper"]');
   var menu_wrap = $('div[class^="FavoritesList__MenuBarWrapper"]');
+  var stats = $('div[class^="MenuBar__StatusCountsStyleWrapper"] label').text();
   var card = $(card_list.children()[0]);
   var card_html;
   var datatable;
@@ -29,7 +30,8 @@ $(function(){
     $('head').append('<link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css" type="text/css" />');
     
     // add table to dom
-    var info_html = '<br><h2 style="text-align:center;">Saved Homes</h2>';
+    var info_html = '<br><h2>Saved Homes</h2>'+
+        '<p>'+ stats +'</p>';
     var table_html = '<table id="custom-table" class="display compact" style="width:100%;text-align:center;"><thead><tr>'+
         '<th>Picture</th>'+
         '<th>Price</th>'+
@@ -57,7 +59,7 @@ $(function(){
         '</table>';
     
     main_body.html(
-      '<div style="margin-left:100px;margin-right:100px;">'+
+      '<div style="margin-left:100px;margin-right:100px;text-align:center;">'+
       info_html+
       table_html+
       '</div>'
@@ -78,7 +80,7 @@ $(function(){
           var days_on_match = days_on_fact ? days_on_fact.match(/(\d+)/) : undefined;
           var days_on_zillow = days_on_match ? days_on_match[1] : '';
           var row = '<tr>'+
-              '<td><a href="'+ data['url'] +'">'+'<img src="'+ data['picture_url'] +'" style="max-width:200px;max-height:150px;"></a></td>'+
+              '<td><a href="'+ data['url'] +'" target="_blank">'+'<img src="'+ data['picture_url'] +'" style="max-width:200px;max-height:150px;"></a></td>'+
               '<td>'+ data['price'] + '</td>'+
               '<td>'+ data['status'] + '</td>'+
               '<td>'+ data['bedrooms'] + '</td>'+
@@ -115,7 +117,7 @@ $(function(){
           columns:[
             {data: 'picture'},
             {data: 'price', render: render_number},
-            {data: 'status'},
+            {data: 'status', render: render_status},
             {data: 'bed', render: render_number},
             {data: 'bath', render: render_number},
             {data: 'sqft', render: render_number},
@@ -128,7 +130,7 @@ $(function(){
             {data: 'cooling'},
             {data: 'parking'},
             {data: 'hoa', render: render_number},
-            {data: 'lot'},
+            {data: 'lot', render: render_number},
             {data: 'price/sqft', render: render_number},
             {data: 'brokerage'},
             {data: 'saves', render: render_number},
@@ -163,7 +165,7 @@ $(function(){
     }
     var ret = 9999999;
     if(data){
-      var match = data.replaceAll(',','').match(/(\d+)/);
+      var match = data.replaceAll(',','').match(/(\d*\.?\d+)/);
       if(match && match[1]){
         ret = match[1];
       }else if(data === 'None'){
@@ -179,6 +181,20 @@ $(function(){
       return date;
     }
     return raw_date;
+  }
+  
+  var render_status = function(data,type){
+    if(type === 'display'){
+      return data;
+    }
+    var ret = 'Off Market';
+    if(data.match(active_listing_regex)){
+      ret = 'Active';
+    }
+    if(data.match(pending_listing_regex)){
+      ret = 'Pending'
+    }
+    return ret;
   }
   
   var data_for_property = function(data_index){
@@ -341,5 +357,5 @@ $(function(){
     load_button.click(init_table);
   }
   
-  init();
+  setTimeout(init, 1000);
 });
