@@ -130,7 +130,7 @@ $(function(){
             {data: 'cooling'},
             {data: 'parking'},
             {data: 'hoa', render: render_number},
-            {data: 'lot', render: render_number},
+            {data: 'lot', render: render_lot},
             {data: 'price/sqft', render: render_number},
             {data: 'brokerage'},
             {data: 'saves', render: render_number},
@@ -173,6 +173,29 @@ $(function(){
       }
     }
     return ret;
+  }
+  
+  var render_lot = function(data,type){
+    if(data){
+      var no_commas = data.replaceAll(',','');
+      var match = no_commas.match(/(\d*\.?\d+).*sqft/);
+      if(match && match[1]){
+        var sqft_in_one_acre = 43560.0;
+        var acres = (parseFloat(match[1])/sqft_in_one_acre).toFixed(2);
+        if(type === 'display'){
+          return acres + ' acres';
+        }
+        return acres;
+      }
+      var match = no_commas.match(/(\d*\.?\d+).*acre/);
+      if(match && match[1]){
+        if(type === 'display'){
+          return data;
+        }
+        return parseFloat(match[1]).toFixed(2);
+      }
+    }
+    return data;
   }
   
   var render_date = function(raw_date,type){
