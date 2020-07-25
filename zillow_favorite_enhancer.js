@@ -26,7 +26,7 @@ $(function(){
   var off_market_listing_regex = /(sold|off.market|other|recently.sold)/i;
   
   var init_table = function(){
-    // load datatables CSS
+    // load CSS
     $('head').append('<link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css" type="text/css" />');
     
     // add table to dom
@@ -51,9 +51,11 @@ $(function(){
         '<th>Lot</th>'+
         '<th>Price/sqft</th>'+
         '<th>Brokerage</th>'+
+        '<th>Saves per Day</th>'+
         '<th>Saves</th>'+
         '<th>Days on Zillow</th>'+
         '<th>Date Saved</th>'+
+        '<th>Notes</th>'+
         '</tr></thead>'+
         '<tbody></tbody>'+
         '</table>';
@@ -79,7 +81,14 @@ $(function(){
           var days_on_fact = get_fact(data['facts'], 'Days on Zillow');
           var days_on_match = days_on_fact ? days_on_fact.match(/(\d+)/) : undefined;
           var days_on_zillow = days_on_match ? days_on_match[1] : '';
-          var row = '<tr>'+
+          var saves = get_fact(data['facts'], 'Saves');
+          var saves_per_day;
+          if(saves && days_on_zillow){
+            saves = parseInt(saves);
+            days_on_zillow = parseInt(days_on_zillow);
+            saves_per_day = (saves / days_on_zillow).toFixed(2);
+          }
+          var row = '<tr data-zpid='+ data['zpid'] +'>'+
               '<td><a href="'+ data['url'] +'" target="_blank">'+'<img src="'+ data['picture_url'] +'" style="max-width:200px;max-height:150px;"></a></td>'+
               '<td>'+ data['price'] + '</td>'+
               '<td>'+ data['status'] + '</td>'+
@@ -98,9 +107,11 @@ $(function(){
               '<td>'+ get_fact(data['facts'], 'Lot') + '</td>'+
               '<td>'+ get_fact(data['facts'], 'Price/sqft') + '</td>'+
               '<td>'+ data['brokerage'] + '</td>'+
-              '<td>'+ get_fact(data['facts'], 'Saves') + '</td>'+
+              '<td>'+ saves_per_day + '</td>'+
+              '<td>'+ saves + '</td>'+
               '<td>'+ days_on_zillow + '</td>'+
               '<td>'+ data['raw_saved_date'] + '</td>'+
+              '<td><textarea class="note">'+ data['notes'] +'</textarea></td>'+
               '</tr>';
           body.append(row);
         }
@@ -133,9 +144,11 @@ $(function(){
             {data: 'lot', render: render_lot},
             {data: 'price/sqft', render: render_number},
             {data: 'brokerage'},
+            {data: 'saves_per_day'},
             {data: 'saves', render: render_number},
             {data: 'days_on_zillow', render: render_number},
-            {data: 'date_saved', render: render_date}
+            {data: 'date_saved', render: render_date},
+            {data: 'notes', render: render_note}
           ]
         });
         // add filters to each column
@@ -154,10 +167,25 @@ $(function(){
             }
           });
         });
+        
+        // save notes when they are updated
+        table.find('textarea.note').on('keyup change', function(e){
+          var target = $(e.target);
+          var note = target.val();
+          var zpid = target.parents('tr').data('zpid');
+          set_zillow_note(zpid, note);
+        });
       }
     }, 250);
     
   }
+  
+  var render_note = function(data,type){
+    if(type === 'display'){
+      return data;
+    }
+    return $(data).val();
+  } 
   
   var render_number = function(data,type){
     if(type === 'display'){
@@ -262,6 +290,10 @@ $(function(){
         }
       }
     });
+    
+    // load notes
+    var notes = get_zillow_notes();
+    property_data['notes'] = notes[property_data['zpid']] || '';
      
     // fetch additional info not provided on the page already
     fetch_home_details(property_data['zpid']).then(
@@ -304,6 +336,20 @@ $(function(){
     })
     
     return property_data;
+  }
+  
+  var get_zillow_notes = function(){
+    if(localStorage.zillow_notes == undefined){
+      return {};
+    } else {
+      return JSON.parse(localStorage.zillow_notes);
+    }
+  }
+
+  var set_zillow_note = function(zpid, note){
+    var notes = get_zillow_notes();
+    notes[zpid] = note;
+    localStorage.zillow_notes = JSON.stringify(notes);
   }
   
   var fetch_home_details = function(zpid){
@@ -372,7 +418,7 @@ $(function(){
     return matched;
   }
   
-  var init = function(){
+  var init = function(){    
     var load_button_html = '<br><button id="load-table">Load Table View</button>';
     menu_wrap.append(load_button_html);
     var load_button = menu_wrap.find('#load-table')
