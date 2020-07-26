@@ -84,7 +84,7 @@ $(function(){
           var saves = get_fact(data['facts'], 'Saves');
           var saves_per_day;
           if(saves && days_on_zillow){
-            saves = parseInt(saves);
+            saves = parseInt(saves.replaceAll(',',''));
             days_on_zillow = parseInt(days_on_zillow);
             saves_per_day = (saves / days_on_zillow).toFixed(2);
           }
@@ -124,7 +124,7 @@ $(function(){
         clearInterval(data_ready);
         datatable = table.DataTable({
           lengthMenu: [[-1, 10, 25, 50], ['All', 10, 25, 50]],
-          order: [[20, "desc" ]],
+          order: [[21, "desc" ]],
           columns:[
             {data: 'picture'},
             {data: 'price', render: render_number},
@@ -144,7 +144,7 @@ $(function(){
             {data: 'lot', render: render_lot},
             {data: 'price/sqft', render: render_number},
             {data: 'brokerage'},
-            {data: 'saves_per_day'},
+            {data: 'saves_per_day', render: render_number},
             {data: 'saves', render: render_number},
             {data: 'days_on_zillow', render: render_number},
             {data: 'date_saved', render: render_date},
