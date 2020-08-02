@@ -73,6 +73,7 @@ $(function(){
     var listings = all_listings();
     $.each(listings, function(i,listing_id){
       var data = data_for_property(listing_id);
+      var attempts = 0;
       var interval = setInterval(function(){
         if(data['picture_url'] && data['facts']){
           clearInterval(interval);
@@ -114,13 +115,22 @@ $(function(){
               '<td><textarea class="note">'+ data['notes'] +'</textarea></td>'+
               '</tr>';
           body.append(row);
+        } else {
+          attempts++;
+          if(attempts > 20) {
+            // retry, probably network failure or something
+            console.log("No data yet for listing index " + listing_id + ". Retrying.");
+            attempts = 0;
+            data = data_for_property(listing_id);
+          }
         }
       }, 100);
     });
     
     // wait for data to be populated before initializing DataTables
     var data_ready = setInterval(function(){
-      if(body.find('tr').length == listings.length){
+      var num_listings_ready = body.find('tr').length;
+      if(num_listings_ready == listings.length){
         clearInterval(data_ready);
         datatable = table.DataTable({
           lengthMenu: [[-1, 10, 25, 50], ['All', 10, 25, 50]],
@@ -307,7 +317,12 @@ $(function(){
 
         // process response and replace property facts
         response.json().then(function(data) {
-          property_data['facts'] = data['data']['property']['homeFacts']['atAGlanceFacts'];
+          if(data['data']['property']){
+            property_data['facts'] = data['data']['property']['homeFacts']['atAGlanceFacts'];
+          } else {
+            console.log("Couldn't retrieve facts for " + property_data['zpid']);
+          }
+          
         });
       }
     )
@@ -327,7 +342,11 @@ $(function(){
 
         // process response and replace property facts
         response.json().then(function(data) {
-          property_data['picture_url'] = data['data']['property']['photos'][0]['url'];
+          if(data['data']['property']){
+            property_data['picture_url'] = data['data']['property']['photos'][0]['url'];
+          } else {
+            console.log("Couldn't retrieve photos for " + property_data['zpid']);
+          }
         });
       }
     )
@@ -368,7 +387,7 @@ $(function(){
   }
   
   var fetch_property_pictures = function(zpid){
-    var body = "{\"operationName\":\"GetPropertyPhotos\",\"variables\":{\"zpid\":" + zpid +"},\"query\":\"query GetPropertyPhotos($zpid: ID) {\\n  property(zpid: $zpid) {\\n    photos(count: 1, size: XXL) {\\n      url\\n      __typename\\n    }\\n    photoCount\\n    googleStaticMapSignedUrl(featureArea: \\\"mzFavoritesListCard\\\", type: SATELLITE, width: 400, height: 215)\\n    googleStreetViewImageSignedUrl(featureArea: \\\"mzFavoritesListCard\\\", locationType: ADDRESS, width: 400, height: 215)\\n    googleStreetViewMetadataSignedUrl(featureArea: \\\"mzFavoritesListCard\\\", locationType: ADDRESS)\\n    __typename\\n  }\\n}\\n\"}";
+    var body = "{\"operationName\":\"GetPropertyPhotos\",\"variables\":{\"zpid\":" + zpid +"},\"query\":\"query GetPropertyPhotos($zpid: ID) {\\n  property(zpid: $zpid) {\\n    photos(count: 1, size: S) {\\n      url\\n      __typename\\n    }\\n    photoCount\\n    googleStaticMapSignedUrl(featureArea: \\\"mzFavoritesListCard\\\", type: SATELLITE, width: 400, height: 215)\\n    googleStreetViewImageSignedUrl(featureArea: \\\"mzFavoritesListCard\\\", locationType: ADDRESS, width: 400, height: 215)\\n    googleStreetViewMetadataSignedUrl(featureArea: \\\"mzFavoritesListCard\\\", locationType: ADDRESS)\\n    __typename\\n  }\\n}\\n\"}";
     return graphql_fetch(body);
   }
   
