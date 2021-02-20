@@ -372,7 +372,7 @@ $(function(){
   }
   
   var fetch_home_details = function(zpid){
-    var body = "{\"operationName\":\"GetPropertyFacts\",\"variables\":{\"zpid\":" + zpid +"},\"query\":\"query GetPropertyFacts($zpid: ID) {\\n  property(zpid: $zpid) {\\n    homeType\\n    homeFacts {\\n      atAGlanceFacts {\\n        factLabel\\n        factValue\\n        __typename\\n      }\\n      __typename\\n    }\\n    lotSize\\n    __typename\\n  }\\n}\\n\"}";
+    var body = "{\"operationName\":\"GetPropertyFacts\",\"variables\":{\"zpid\":" + zpid +"},\"query\":\"query GetPropertyFacts($zpid: ID) {\\n  property(zpid: $zpid) {\\n    homeType\\n    homeFacts: resoFacts {\\n      atAGlanceFacts {\\n        factLabel\\n        factValue\\n        __typename\\n      }\\n      __typename\\n    }\\n    lotAreaValue\\n    lotAreaUnits\\n    lotSize\\n    __typename\\n  }\\n}\\n\"}";
     return graphql_fetch(body);
   }
   
